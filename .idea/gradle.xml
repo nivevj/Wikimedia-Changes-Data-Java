@@ -10,6 +10,8 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/kafka-basics" />
+            <option value="$PROJECT_DIR$/kafka-consumer-opensearch" />
+            <option value="$PROJECT_DIR$/kafka-consumer-opensearch/docker-compose.yml" />
             <option value="$PROJECT_DIR$/kafka-producer-wikimedia" />
           </set>
         </option>
