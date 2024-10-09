@@ -24,7 +24,7 @@ dependencies {
     implementation ("org.opensearch.client:opensearch-rest-high-level-client:2.17.1")
 
     //gson google dependency
-    implementation ("org.netbeans.external:com-google-gson:RELEASE113")
+    implementation ("com.google.code.gson:gson:2.10")
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")

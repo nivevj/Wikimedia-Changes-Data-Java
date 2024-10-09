@@ -1,5 +1,6 @@
 package io.project.kafka.opensearch;
 
+import com.google.gson.JsonParser;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -75,11 +76,17 @@ public class OpenSearchConsumer {
         properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG,groupId);
         properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"latest");
+        properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,"false");
 
         //create consumer
         KafkaConsumer<String, String> kafkaConsumer=new KafkaConsumer<>(properties);
 
         return kafkaConsumer;
+    }
+
+    private static String extractId(String json){
+        //gson library
+        return JsonParser.parseString(json).getAsJsonObject().get("meta").getAsJsonObject().get("id").getAsString();
     }
 
     public static void main(String[] args) throws IOException {
@@ -117,11 +124,22 @@ public class OpenSearchConsumer {
 
                 //sending data to elastic search
                 for(ConsumerRecord<String, String> record: records){
-                    IndexRequest indexRequest=new IndexRequest("wikimedia").source(record.value(), XContentType.JSON);
+
+                    // create id : strategy 1
+                    //String id = record.topic() + "_" + record.partition() + "_" + record.offset();
+
+                    // extract id from json : strategy 2
+                    String id = extractId(record.value());
+
+                    IndexRequest indexRequest=new IndexRequest("wikimedia").source(record.value(), XContentType.JSON).id(id);
                     IndexResponse response = openSearchClient.index(indexRequest, RequestOptions.DEFAULT);
                     log.info(response.getId());
                     log.info("Inserted 1 document into OpenSearch");
                 }
+
+                //commit offset after batch is consumed
+                kafkaConsumer.commitSync();
+                log.info("Offsets are commited");
             }
         }
 
